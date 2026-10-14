@@ -1,0 +1,550 @@
+/* =====================================================================
+   Eina Loux Ruiz — Portfolio styles
+   Font: Instrument Serif (loaded in index.html)
+   ===================================================================== */
+
+:root {
+  --black: #000000;
+  --photo-bg: #1d1b1e;
+  --cream: #ffffe4;
+  --bar: #e6f9fa;
+  --green: #95ff6f;
+  --yellow: #ffca1c;
+  --purple: #8998fd;
+  --pink: #ef58f7;
+
+  --line: 1.5px solid var(--black);
+  --bounce: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoots = bouncy */
+  --spring: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+
+  /* spacing scale — everything below uses these so it stays consistent */
+  --edge: clamp(14px, 2.2vw, 32px); /* gap from screen edge to the bar */
+  --bar-top: clamp(14px, 3vw, 36px);
+  --bar-h: clamp(38px, 4.4vw, 52px);
+  --dot-size: clamp(22px, 2.4vw, 30px);
+}
+
+/* ---------- reset (also neutralises leftover Vite starter styles) ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--cream);
+}
+
+body {
+  display: block;
+  min-width: 0;
+  min-height: 100vh;
+  margin: 0;
+  font-family: var(--serif);
+  background: var(--cream);
+  color: var(--black);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+#root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* =====================================================================
+   HOME
+   ===================================================================== */
+.frame {
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44fr 56fr;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* exact screen height, ignores mobile browser bars */
+  min-height: 560px;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+/* ---------- browser bar ---------- */
+.app {
+  position: relative;
+}
+
+.bar {
+  --pad: calc((var(--bar-h) - var(--dot-size)) / 2 + 2px);
+  --gap: clamp(10px, 1.2vw, 16px);
+  --step: calc(var(--dot-size) + var(--gap));
+
+  position: absolute;
+  z-index: 110; /* above the color fill, so you see the circles slide */
+  top: var(--bar-top);
+  left: var(--edge);
+  right: var(--edge);
+  height: var(--bar-h);
+  background: var(--bar);
+  border: var(--line);
+  border-radius: 999px;
+  animation: drop-in 800ms var(--bounce) 200ms both;
+}
+
+.dot {
+  position: absolute;
+  top: 50%;
+  margin-top: calc(var(--dot-size) / -2);
+  left: var(--pad);
+  width: var(--dot-size);
+  height: var(--dot-size);
+  padding: 0;
+  border-radius: 50%;
+  border: var(--line);
+  background: var(--dot); /* each circle's color is set in BrowserBar.jsx */
+  animation: dot-pop 650ms var(--spring) both;
+  animation-delay: calc(500ms + var(--i) * 110ms);
+  transition: scale 300ms var(--spring), translate 300ms var(--spring),
+    box-shadow 200ms;
+}
+
+/* page circles: docked ones line up after Home, the rest hug the right edge.
+   They glide over, then do a squishy bounce when they land. */
+.dot--nav {
+  transition: left 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--slide-delay, 0ms),
+    scale 300ms var(--spring), translate 300ms var(--spring), box-shadow 200ms;
+}
+
+.dot--nav.is-docked {
+  left: calc(var(--pad) + (var(--slot) * var(--step)));
+  animation:
+    dot-pop 650ms var(--spring) calc(500ms + var(--i) * 110ms) both,
+    land-left 650ms ease-out calc(var(--slide-delay) + 380ms);
+}
+
+.dot--nav.is-right {
+  left: calc(100% - var(--pad) - var(--dot-size) - (var(--slot) * var(--step)));
+  animation:
+    dot-pop 650ms var(--spring) calc(500ms + var(--i) * 110ms) both,
+    land-right 650ms ease-out calc(var(--slide-delay) + 380ms);
+}
+
+.dot:hover,
+.dot:focus-visible {
+  scale: 1.22;
+  translate: 0 -2px;
+  box-shadow: 0 3px 0 var(--black);
+  outline: none;
+}
+
+.dot:active {
+  scale: 0.9;
+}
+
+.dot[aria-current="page"] {
+  box-shadow: inset 0 0 0 3px var(--bar);
+}
+
+/* label that pops out under each circle on hover */
+.dot::after {
+  content: attr(data-label);
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.6);
+  transform-origin: top right;
+  white-space: nowrap;
+  font-size: 16px;
+  line-height: 1;
+  padding: 5px 12px;
+  background: var(--dot);
+  border: var(--line);
+  border-radius: 999px;
+  pointer-events: none;
+  transition: transform 300ms var(--spring), opacity 150ms;
+}
+
+.dot--home::after,
+.dot--nav.is-docked::after {
+  right: auto;
+  left: 0;
+  transform-origin: top left;
+}
+
+.dot:hover::after,
+.dot:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ---------- photo panel ---------- */
+.photo {
+  position: relative;
+  height: 100%;
+  background: var(--photo-bg);
+  border-right: var(--line);
+  overflow: hidden;
+  animation: slide-right 900ms var(--bounce) 150ms both;
+}
+
+.photo__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  /* gentle "breathing" zoom — always scaled up a bit so no edges show */
+  animation: breathe 7s ease-in-out 1.2s infinite;
+}
+
+.photo__placeholder {
+  position: absolute;
+  inset: calc(var(--bar-top) + var(--bar-h) + 24px) 8% 8%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+  color: var(--cream);
+  font-size: clamp(22px, 2.4vw, 32px);
+  font-style: italic;
+  border: 2px dashed rgba(255, 255, 228, 0.35);
+  border-radius: 18px;
+  animation: float 5s ease-in-out 1.2s infinite;
+}
+
+.photo__placeholder small {
+  font-size: 14px;
+  font-style: normal;
+  opacity: 0.55;
+}
+
+.photo__icon {
+  font-size: 1.6em;
+  color: var(--yellow);
+  animation: spin-bob 4s var(--bounce) infinite;
+}
+
+/* ---------- text panel ---------- */
+.intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-width: 0;
+  height: 100%;
+  padding: calc(var(--bar-top) + var(--bar-h) + 24px) var(--edge)
+    clamp(32px, 9vh, 96px) clamp(20px, 2.4vw, 36px);
+  background: var(--cream);
+}
+
+.name {
+  font-weight: 400;
+  font-size: clamp(64px, 8.6vw, 168px);
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  -webkit-text-stroke: 0.6px var(--black);
+  margin-bottom: 0.28em;
+}
+
+.name__first {
+  display: block;
+  font-style: italic;
+}
+
+.name__last {
+  display: block;
+}
+
+.bouncy {
+  display: inline-block;
+}
+
+.bouncy__ch {
+  display: inline-block;
+  animation: letter-in 750ms var(--spring) both;
+  transition: translate 350ms var(--spring), rotate 350ms var(--spring);
+}
+
+.bouncy__ch:hover {
+  translate: 0 -0.12em;
+  rotate: -6deg;
+}
+
+.degree,
+.skills {
+  font-size: clamp(22px, 2.3vw, 42px);
+  line-height: 1.05;
+}
+
+.degree {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.85em;
+}
+
+.skills {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.32em;
+  row-gap: 0.04em;
+  max-width: 17em; /* wraps into two rows like the mockup */
+}
+
+.skill {
+  color: var(--c);
+  -webkit-text-stroke: 0.8px var(--outline);
+  paint-order: stroke fill;
+  white-space: nowrap;
+  cursor: default;
+  animation: tag-pop 700ms var(--spring) both;
+  transition: translate 350ms var(--spring), scale 350ms var(--spring),
+    rotate 350ms var(--spring);
+}
+
+.skill:hover {
+  translate: 0 -4px;
+  scale: 1.07;
+  rotate: -3deg;
+}
+
+.skill:nth-child(even):hover {
+  rotate: 3deg;
+}
+
+/* =====================================================================
+   SUBPAGES (About / Projects / Contact)
+   ===================================================================== */
+.subpage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--page);
+}
+
+.subpage__inner {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: calc(var(--bar-top) + var(--bar-h) + clamp(28px, 6vh, 64px))
+    var(--edge) var(--edge);
+}
+
+.subpage__title {
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(56px, 10vw, 160px);
+  line-height: 0.9;
+  -webkit-text-stroke: 0.6px var(--black);
+}
+
+.subpage__content {
+  min-height: 40vh;
+}
+
+/* =====================================================================
+   COLOR FILL PAGE TRANSITION
+   ===================================================================== */
+.color-fill {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--fill-color);
+  clip-path: circle(0 at var(--fill-x) var(--fill-y));
+  animation: fill-grow var(--fill-ms) cubic-bezier(0.65, 0, 0.35, 1) forwards,
+    fill-fade 250ms ease var(--fill-ms) forwards;
+}
+
+/* reusable entrances */
+.slide-up {
+  animation: slide-up 800ms var(--bounce) both;
+}
+
+.slide-in {
+  animation: slide-in 850ms var(--bounce) 150ms both;
+}
+
+/* =====================================================================
+   TABLET & PHONE — photo on top, text below
+   ===================================================================== */
+@media (max-width: 820px) {
+  .card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .photo {
+    height: 58vh;
+    height: 58svh;
+    min-height: 340px;
+    border-right: 0;
+    border-bottom: var(--line);
+    animation-name: slide-down;
+  }
+
+  .photo__img {
+    object-position: center 20%;
+  }
+
+  .intro {
+    height: auto;
+    justify-content: flex-start;
+    padding: 28px var(--edge) 44px;
+  }
+
+  .name {
+    font-size: clamp(56px, 15vw, 110px);
+  }
+
+  .degree,
+  .skills {
+    font-size: clamp(22px, 5.6vw, 34px);
+  }
+
+  .skills {
+    max-width: none;
+  }
+
+  .dot::after {
+    font-size: 14px;
+  }
+}
+
+/* very small phones */
+@media (max-width: 380px) {
+  .bar {
+    --gap: 8px;
+  }
+
+  .skill {
+    white-space: normal;
+  }
+}
+
+/* short, wide screens (small laptops, landscape phones) */
+@media (min-width: 821px) and (max-height: 640px) {
+  .name {
+    font-size: clamp(56px, 13vh, 120px);
+  }
+
+  .degree,
+  .skills {
+    font-size: clamp(20px, 4vh, 30px);
+  }
+
+  .intro {
+    padding-bottom: 32px;
+  }
+}
+
+/* =====================================================================
+   KEYFRAMES
+   ===================================================================== */
+@keyframes drop-in {
+  0% { transform: translateY(-140%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes dot-pop {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+@keyframes slide-right {
+  0% { transform: translateX(-30%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-down {
+  0% { transform: translateY(-20%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* squash-and-stretch when a circle lands (two names so switching restarts it) */
+@keyframes land-left {
+  0% { scale: 1; }
+  25% { scale: 1.35 0.75; }
+  50% { scale: 0.85 1.2; }
+  75% { scale: 1.08 0.94; }
+  100% { scale: 1; }
+}
+
+@keyframes land-right {
+  0% { scale: 1; }
+  25% { scale: 1.35 0.75; }
+  50% { scale: 0.85 1.2; }
+  75% { scale: 1.08 0.94; }
+  100% { scale: 1; }
+}
+
+@keyframes letter-in {
+  0% { transform: translateY(0.9em) scale(0.4) rotate(12deg); opacity: 0; }
+  100% { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(40px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slide-in {
+  0% { transform: translateX(-60px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes tag-pop {
+  0% { transform: scale(0.3) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes breathe {
+  0%, 100% { scale: 1.02; }
+  50% { scale: 1.07; }
+}
+
+@keyframes float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -10px; }
+}
+
+@keyframes spin-bob {
+  0%, 100% { transform: rotate(0) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+}
+
+@keyframes fill-grow {
+  to { clip-path: circle(150vmax at var(--fill-x) var(--fill-y)); }
+}
+
+@keyframes fill-fade {
+  to { opacity: 0; }
+}
+
+/* People who turn motion off in their OS settings get a calm version. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
